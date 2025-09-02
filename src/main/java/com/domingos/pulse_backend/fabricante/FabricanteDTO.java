@@ -2,6 +2,7 @@ package com.domingos.pulse_backend.fabricante;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import com.domingos.pulse_backend.fabricante.validation.CNPJ;
 
 // DTO para criação/atualização de Fabricante
 public class FabricanteDTO {
@@ -12,6 +13,7 @@ public class FabricanteDTO {
 
     @NotBlank(message = "CNPJ é obrigatório")
     @Size(max = 20)
+    @CNPJ(message = "CNPJ inválido")
     private String cnpj;
 
     private String endereco;
@@ -60,4 +62,3 @@ public class FabricanteDTO {
         this.contato = contato;
     }
 }
-
