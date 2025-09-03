@@ -4,15 +4,18 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/produtos")
+@Validated
 public class ProdutoController {
 
     private final ProdutoService service;
@@ -32,8 +35,15 @@ public class ProdutoController {
     }
 
     @GetMapping
-    public List<ProdutoResponse> listar() {
-        return service.listar().stream().map(this::toResponse).collect(Collectors.toList());
+    public List<ProdutoResponse> listar(@RequestParam(name = "fabricanteId", required = false) Long fabricanteId) {
+        List<Produto> produtos = (fabricanteId == null) ? service.listar() : service.listarPorFabricante(fabricanteId);
+        return produtos.stream().map(this::toResponse).collect(Collectors.toList());
+    }
+
+    @GetMapping("/relatorio")
+    public Map<Long, List<ProdutoResponse>> relatorioAgrupadoPorFabricante() {
+        return service.agruparPorFabricante().entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().map(this::toResponse).collect(Collectors.toList())));
     }
 
     @GetMapping("/{id}")
@@ -67,4 +77,3 @@ public class ProdutoController {
         return r;
     }
 }
-
