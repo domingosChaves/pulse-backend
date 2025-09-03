@@ -1,6 +1,8 @@
 package com.domingos.pulse_backend.produto;
 
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,8 +42,25 @@ public class ProdutoController {
         return produtos.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    @GetMapping("/paged")
+    public Page<ProdutoResponse> listarPaged(
+            @RequestParam(name = "nome", required = false) String nome,
+            @RequestParam(name = "fabricanteId", required = false) Long fabricanteId,
+            Pageable pageable
+    ) {
+        Page<Produto> page;
+        if (nome != null && !nome.isBlank()) {
+            page = service.buscarPorNome(nome, pageable);
+        } else if (fabricanteId != null) {
+            page = service.listarPorFabricantePaged(fabricanteId, pageable);
+        } else {
+            page = service.listar(pageable);
+        }
+        return page.map(this::toResponse);
+    }
+
     @GetMapping("/relatorio")
-    public Map<Long, List<ProdutoResponse>> relatorioAgrupadoPorFabricante() {
+    public Map<String, List<ProdutoResponse>> relatorioAgrupadoPorFabricante() {
         return service.agruparPorFabricante().entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().map(this::toResponse).collect(Collectors.toList())));
     }
