@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -33,6 +35,10 @@ public class ProdutoService {
 
     public List<Produto> listar() {
         return produtoPort.findAll();
+    }
+
+    public List<Produto> listarPorFabricante(Long fabricanteId) {
+        return produtoPort.findByFabricanteId(fabricanteId);
     }
 
     public Produto buscarPorId(Long id) {
@@ -62,5 +68,10 @@ public class ProdutoService {
     public void excluir(Long id) {
         Produto existente = buscarPorId(id);
         produtoPort.delete(existente);
+    }
+
+    public Map<Long, List<Produto>> agruparPorFabricante() {
+        return produtoPort.findAll().stream()
+                .collect(Collectors.groupingBy(p -> p.getFabricante().getId()));
     }
 }

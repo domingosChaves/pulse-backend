@@ -10,6 +10,6 @@ public interface ProdutoPort {
     List<Produto> findAll();
     Optional<Produto> findById(Long id);
     Optional<Produto> findByCodigoBarras(String codigoBarras);
+    List<Produto> findByFabricanteId(Long fabricanteId);
     void delete(Produto produto);
 }
-
