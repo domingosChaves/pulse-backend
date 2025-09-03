@@ -38,8 +38,12 @@ public class ProdutoAdapter implements ProdutoPort {
     }
 
     @Override
+    public List<Produto> findByFabricanteId(Long fabricanteId) {
+        return repository.findByFabricanteId(fabricanteId);
+    }
+
+    @Override
     public void delete(Produto produto) {
         repository.delete(produto);
     }
 }
-

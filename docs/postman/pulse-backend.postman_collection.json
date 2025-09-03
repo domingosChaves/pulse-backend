@@ -49,6 +49,15 @@
             },
             "url": "http://localhost:8081/api/produtos"
           }
+        },
+        {
+          "name": "Relatorio Agrupado por Fabricante",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:8081/api/produtos/relatorio"
+          },
+          "description": "Retorna produtos agrupados por fabricante (chaves = fabricanteId)"
         }
       ]
     },
@@ -67,4 +76,3 @@
     }
   ]
 }
-
