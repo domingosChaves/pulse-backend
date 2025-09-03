@@ -35,7 +35,6 @@ public class FeignConfig {
 
     @Bean
     public ErrorDecoder errorDecoder() {
-        return new ErrorDecoder.Default();
+        return new FeignErrorDecoder();
     }
 }
-
