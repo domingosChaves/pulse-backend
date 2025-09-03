@@ -1,0 +1,45 @@
+package com.domingos.pulse_backend.produto.adapter;
+
+import com.domingos.pulse_backend.produto.Produto;
+import com.domingos.pulse_backend.produto.ProdutoRepository;
+import com.domingos.pulse_backend.produto.port.ProdutoPort;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public class ProdutoAdapter implements ProdutoPort {
+
+    private final ProdutoRepository repository;
+
+    public ProdutoAdapter(ProdutoRepository repository) {
+        this.repository = repository;
+    }
+
+    @Override
+    public Produto save(Produto produto) {
+        return repository.save(produto);
+    }
+
+    @Override
+    public List<Produto> findAll() {
+        return repository.findAll();
+    }
+
+    @Override
+    public Optional<Produto> findById(Long id) {
+        return repository.findById(id);
+    }
+
+    @Override
+    public Optional<Produto> findByCodigoBarras(String codigoBarras) {
+        return repository.findByCodigoBarras(codigoBarras);
+    }
+
+    @Override
+    public void delete(Produto produto) {
+        repository.delete(produto);
+    }
+}
+
