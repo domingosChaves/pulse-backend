@@ -4,6 +4,8 @@ import com.domingos.pulse_backend.fabricante.Fabricante;
 import com.domingos.pulse_backend.fabricante.port.FabricantePort;
 import com.domingos.pulse_backend.produto.port.ProdutoPort;
 import com.domingos.pulse_backend.fabricante.ResourceNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,8 +39,20 @@ public class ProdutoService {
         return produtoPort.findAll();
     }
 
+    public Page<Produto> listar(Pageable pageable) {
+        return produtoPort.findAll(pageable);
+    }
+
+    public Page<Produto> buscarPorNome(String nome, Pageable pageable) {
+        return produtoPort.findByNomeContainingIgnoreCase(nome, pageable);
+    }
+
     public List<Produto> listarPorFabricante(Long fabricanteId) {
         return produtoPort.findByFabricanteId(fabricanteId);
+    }
+
+    public Page<Produto> listarPorFabricantePaged(Long fabricanteId, Pageable pageable) {
+        return produtoPort.findByFabricanteId(fabricanteId, pageable);
     }
 
     public Produto buscarPorId(Long id) {
@@ -70,8 +84,11 @@ public class ProdutoService {
         produtoPort.delete(existente);
     }
 
-    public Map<Long, List<Produto>> agruparPorFabricante() {
+    public Map<String, List<Produto>> agruparPorFabricante() {
         return produtoPort.findAll().stream()
-                .collect(Collectors.groupingBy(p -> p.getFabricante().getId()));
+                .collect(Collectors.groupingBy(p -> {
+                    Fabricante f = p.getFabricante();
+                    return (f != null && f.getNome() != null) ? f.getNome() : "<sem-fabricante>";
+                }));
     }
 }
