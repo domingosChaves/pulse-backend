@@ -4,7 +4,10 @@ import com.domingos.pulse_backend.fabricante.Fabricante;
 import com.domingos.pulse_backend.fabricante.FabricanteDTO;
 import com.domingos.pulse_backend.produto.ProdutoDTO;
 import com.domingos.pulse_backend.produto.ProdutoResponse;
+import com.domingos.pulse_backend.produto.PageResponse;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +16,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/bff")
@@ -85,5 +89,23 @@ public class BffController {
     public void excluirProduto(@PathVariable Long id) {
         service.excluirProduto(id);
     }
-}
 
+    // NOVO: endpoint paginado via BFF
+    @GetMapping("/produtos/paged")
+    public PageResponse<ProdutoResponse> listarProdutosPaged(
+            @RequestParam(name = "nome", required = false) String nome,
+            @RequestParam(name = "fabricanteId", required = false) Long fabricanteId,
+            @RequestParam(name = "page", required = false, defaultValue = "0") Integer page,
+            @RequestParam(name = "size", required = false, defaultValue = "10") Integer size,
+            @RequestParam(name = "sort", required = false) String sort
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return service.listarProdutosPaged(nome, fabricanteId, page, size, sort);
+    }
+
+    // NOVO: relatório via BFF
+    @GetMapping("/produtos/relatorio")
+    public Map<String, List<ProdutoResponse>> relatorioProdutos() {
+        return service.relatorioProdutos();
+    }
+}

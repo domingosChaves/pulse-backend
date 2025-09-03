@@ -4,10 +4,11 @@ import com.domingos.pulse_backend.fabricante.Fabricante;
 import com.domingos.pulse_backend.fabricante.FabricanteDTO;
 import com.domingos.pulse_backend.produto.ProdutoDTO;
 import com.domingos.pulse_backend.produto.ProdutoResponse;
-import com.domingos.pulse_backend.produto.Produto;
+import com.domingos.pulse_backend.produto.PageResponse;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class BffService {
@@ -62,5 +63,14 @@ public class BffService {
     public void excluirProduto(Long id) {
         produtoClient.excluir(id);
     }
-}
 
+    // Paged via BFF
+    public PageResponse<ProdutoResponse> listarProdutosPaged(String nome, Long fabricanteId, Integer page, Integer size, String sort) {
+        return produtoClient.paged(nome, fabricanteId, page, size, sort);
+    }
+
+    // Relatorio via BFF
+    public Map<String, List<ProdutoResponse>> relatorioProdutos() {
+        return produtoClient.relatorio();
+    }
+}
