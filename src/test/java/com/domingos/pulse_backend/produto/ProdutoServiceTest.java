@@ -1,8 +1,6 @@
 package com.domingos.pulse_backend.produto;
 
 import com.domingos.pulse_backend.fabricante.Fabricante;
-import com.domingos.pulse_backend.fabricante.FabricanteRepository;
-import com.domingos.pulse_backend.fabricante.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,10 +20,10 @@ import static org.mockito.Mockito.*;
 class ProdutoServiceTest {
 
     @Mock
-    private ProdutoRepository produtoRepository;
+    private com.domingos.pulse_backend.produto.port.ProdutoPort produtoPort;
 
     @Mock
-    private FabricanteRepository fabricanteRepository;
+    private com.domingos.pulse_backend.fabricante.port.FabricantePort fabricantePort;
 
     @InjectMocks
     private ProdutoService service;
@@ -47,9 +45,9 @@ class ProdutoServiceTest {
 
     @Test
     void criar_sucesso() {
-        when(produtoRepository.findByCodigoBarras(produto.getCodigoBarras())).thenReturn(Optional.empty());
-        when(fabricanteRepository.findById(fabricante1.getId())).thenReturn(Optional.of(fabricante1));
-        when(produtoRepository.save(ArgumentMatchers.any(Produto.class))).thenAnswer(i -> {
+        when(produtoPort.findByCodigoBarras(produto.getCodigoBarras())).thenReturn(Optional.empty());
+        when(fabricantePort.findById(fabricante1.getId())).thenReturn(Optional.of(fabricante1));
+        when(produtoPort.save(ArgumentMatchers.any(Produto.class))).thenAnswer(i -> {
             Produto p = i.getArgument(0);
             p.setId(1L);
             return p;
@@ -66,12 +64,12 @@ class ProdutoServiceTest {
 
         assertNotNull(criado.getId());
         assertEquals("Produto X", criado.getNome());
-        verify(produtoRepository, times(1)).save(ArgumentMatchers.any(Produto.class));
+        verify(produtoPort, times(1)).save(ArgumentMatchers.any(Produto.class));
     }
 
     @Test
     void criar_codigoBarrasDuplicado_deveLancar() {
-        when(produtoRepository.findByCodigoBarras(produto.getCodigoBarras())).thenReturn(Optional.of(produto));
+        when(produtoPort.findByCodigoBarras(produto.getCodigoBarras())).thenReturn(Optional.of(produto));
 
         ProdutoDTO dto = new ProdutoDTO();
         dto.setNome(produto.getNome());
@@ -79,18 +77,18 @@ class ProdutoServiceTest {
         dto.setFabricanteId(fabricante1.getId());
 
         assertThrows(IllegalArgumentException.class, () -> service.criar(dto));
-        verify(produtoRepository, never()).save(any());
+        verify(produtoPort, never()).save(any());
     }
 
     @Test
     void buscarPorId_naoEncontrado_deveLancar() {
-        when(produtoRepository.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(ResourceNotFoundException.class, () -> service.buscarPorId(99L));
+        when(produtoPort.findById(99L)).thenReturn(Optional.empty());
+        assertThrows(com.domingos.pulse_backend.fabricante.ResourceNotFoundException.class, () -> service.buscarPorId(99L));
     }
 
     @Test
     void listar_retornaLista() {
-        when(produtoRepository.findAll()).thenReturn(List.of(produto));
+        when(produtoPort.findAll()).thenReturn(List.of(produto));
         List<Produto> list = service.listar();
         assertFalse(list.isEmpty());
         assertEquals(1, list.size());
@@ -98,17 +96,17 @@ class ProdutoServiceTest {
 
     @Test
     void excluir_deveChamarDelete() {
-        when(produtoRepository.findById(1L)).thenReturn(Optional.of(produto));
+        when(produtoPort.findById(1L)).thenReturn(Optional.of(produto));
         service.excluir(1L);
-        verify(produtoRepository, times(1)).delete(produto);
+        verify(produtoPort, times(1)).delete(produto);
     }
 
     @Test
     void atualizar_alterarCodigoBarrasEFabricante() {
-        when(produtoRepository.findById(1L)).thenReturn(Optional.of(produto));
-        when(produtoRepository.findByCodigoBarras("9998887776665")).thenReturn(Optional.empty());
-        when(fabricanteRepository.findById(2L)).thenReturn(Optional.of(fabricante2));
-        when(produtoRepository.save(ArgumentMatchers.any(Produto.class))).thenAnswer(i -> i.getArgument(0));
+        when(produtoPort.findById(1L)).thenReturn(Optional.of(produto));
+        when(produtoPort.findByCodigoBarras("9998887776665")).thenReturn(Optional.empty());
+        when(fabricantePort.findById(2L)).thenReturn(Optional.of(fabricante2));
+        when(produtoPort.save(ArgumentMatchers.any(Produto.class))).thenAnswer(i -> i.getArgument(0));
 
         ProdutoDTO dto = new ProdutoDTO();
         dto.setNome("Produto X atualizado");
@@ -124,4 +122,3 @@ class ProdutoServiceTest {
         assertEquals(new BigDecimal("12.5"), atualizado.getPreco());
     }
 }
-
