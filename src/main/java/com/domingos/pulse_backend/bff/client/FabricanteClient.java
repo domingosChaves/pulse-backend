@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@FeignClient(name = "fabricante-client", url = "${bff.backend.url}")
+@FeignClient(name = "fabricante-client", url = "${bff.backend.url}", configuration = com.domingos.pulse_backend.config.FeignConfig.class)
 public interface FabricanteClient {
 
     @PostMapping("/api/fabricantes")
@@ -25,4 +25,3 @@ public interface FabricanteClient {
     @DeleteMapping("/api/fabricantes/{id}")
     void excluir(@PathVariable("id") Long id);
 }
-
