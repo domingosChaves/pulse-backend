@@ -20,9 +20,10 @@ import java.util.stream.Collectors;
 @Validated
 public class ProdutoController {
 
-    private final ProdutoService service;
 
-    public ProdutoController(ProdutoService service) {
+    private final com.domingos.pulse_backend.produto.port.ProdutoUseCase service;
+
+    public ProdutoController(com.domingos.pulse_backend.produto.port.ProdutoUseCase service) {
         this.service = service;
     }
 

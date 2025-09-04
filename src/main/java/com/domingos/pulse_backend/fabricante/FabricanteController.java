@@ -16,9 +16,9 @@ import java.util.List;
 @Validated
 public class FabricanteController {
 
-    private final FabricanteService service;
+    private final com.domingos.pulse_backend.fabricante.port.FabricanteUseCase service;
 
-    public FabricanteController(FabricanteService service) {
+    public FabricanteController(com.domingos.pulse_backend.fabricante.port.FabricanteUseCase service) {
         this.service = service;
     }
 
@@ -52,4 +52,3 @@ public class FabricanteController {
         service.excluir(id);
     }
 }
-
