@@ -10,6 +10,11 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Serviço do BFF responsável por orquestrar chamadas aos clientes remotos
+ * de Fabricantes e Produtos (via Feign). Mantém a aplicação desacoplada
+ * e centraliza regras simples de roteamento/transformação.
+ */
 @Service
 public class BffService {
 
