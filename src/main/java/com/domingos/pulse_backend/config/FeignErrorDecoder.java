@@ -14,8 +14,6 @@ import java.io.IOException;
  */
 public class FeignErrorDecoder implements ErrorDecoder {
 
-    private final ErrorDecoder defaultDecoder = new Default();
-
     @Override
     public Exception decode(String methodKey, Response response) {
         int status = response.status();
