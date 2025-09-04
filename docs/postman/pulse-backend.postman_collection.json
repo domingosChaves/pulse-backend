@@ -3,7 +3,7 @@
     "_postman_id": "pulse-backend-collection",
     "name": "Pulse Backend API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Coleção Postman com endpoints de Fabricantes, Produtos e BFF (inclui paginação e relatório por nome do fabricante)"
+    "description": "Coleção Postman com endpoints de Fabricantes, Produtos e BFF (inclui paginação e relatório por nome do fabricante).\n\nFormato de erro padrão (HTTP 4xx/5xx):\n{\n  \"error\": \"Mensagem de erro\",\n  \"timestamp\": \"2025-09-03T12:00:00\",\n  \"path\": \"/api/recurso\"\n}"
   },
   "item": [
     {
