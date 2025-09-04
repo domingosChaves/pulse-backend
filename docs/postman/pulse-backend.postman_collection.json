@@ -3,124 +3,122 @@
     "_postman_id": "pulse-backend-collection",
     "name": "Pulse Backend API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Coleção Postman com endpoints de Fabricantes, Produtos e BFF (inclui paginação e relatório por nome do fabricante).\n\nFormato de erro padrão (HTTP 4xx/5xx):\n{\n  \"error\": \"Mensagem de erro\",\n  \"timestamp\": \"2025-09-03T12:00:00\",\n  \"path\": \"/api/recurso\"\n}"
+    "description": "Coleção Postman com endpoints de Autenticação, Fabricantes, Produtos e BFF (inclui paginação e relatório por nome do fabricante).\n\nFormato de erro padrão (HTTP 4xx/5xx):\n{\n  \"error\": \"Mensagem de erro\",\n  \"timestamp\": \"2025-09-03T12:00:00\",\n  \"path\": \"/api/recurso\"\n}"
   },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{accessToken}}", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8081" },
+    { "key": "accessToken", "value": "" }
+  ],
   "item": [
+    {
+      "name": "Autenticação",
+      "item": [
+        {
+          "name": "Login (obter tokens)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        },
+        {
+          "name": "Refresh (renovar tokens)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/refresh"
+          }
+        }
+      ]
+    },
     {
       "name": "Fabricantes",
       "item": [
-        {
-          "name": "Listar Fabricantes",
-          "request": { "method": "GET", "header": [], "url": "http://localhost:8081/api/fabricantes" }
-        },
-        {
-          "name": "Buscar Fabricante por ID",
-          "request": { "method": "GET", "header": [], "url": "http://localhost:8081/api/fabricantes/1" }
-        },
+        { "name": "Listar Fabricantes", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/fabricantes" } },
+        { "name": "Buscar Fabricante por ID", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/fabricantes/1" } },
         {
           "name": "Criar Fabricante",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"nome\": \"ACME Teste\",\n  \"cnpj\": \"11222333000181\",\n  \"endereco\": \"Rua X\",\n  \"telefone\": \"(11)99999-0000\"\n}"
             },
-            "url": "http://localhost:8081/api/fabricantes"
+            "url": "{{baseUrl}}/api/fabricantes"
           }
         },
         {
           "name": "Atualizar Fabricante",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"nome\": \"ACME Atualizada\",\n  \"cnpj\": \"11222333000181\",\n  \"endereco\": \"Rua X, 123\",\n  \"telefone\": \"(11)99999-0001\"\n}"
             },
-            "url": "http://localhost:8081/api/fabricantes/1"
+            "url": "{{baseUrl}}/api/fabricantes/1"
           }
         },
-        {
-          "name": "Excluir Fabricante",
-          "request": { "method": "DELETE", "header": [], "url": "http://localhost:8081/api/fabricantes/1" }
-        }
+        { "name": "Excluir Fabricante", "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/api/fabricantes/1" } }
       ]
     },
     {
       "name": "Produtos",
       "item": [
-        {
-          "name": "Listar Produtos",
-          "request": { "method": "GET", "header": [], "url": "http://localhost:8081/api/produtos" }
-        },
-        {
-          "name": "Listar Produtos por Fabricante",
-          "request": { "method": "GET", "header": [], "url": "http://localhost:8081/api/produtos?fabricanteId=1" }
-        },
-        {
-          "name": "Listar Produtos Paginados",
-          "request": { "method": "GET", "header": [], "url": "http://localhost:8081/api/produtos/paged?nome=Produto&page=0&size=10" },
-          "description": "Pagina resultados com filtros opcionais (nome, fabricanteId). Usa parâmetros padrão do Spring: page, size, sort."
-        },
-        {
-          "name": "Buscar Produto por ID",
-          "request": { "method": "GET", "header": [], "url": "http://localhost:8081/api/produtos/1" }
-        },
+        { "name": "Listar Produtos", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/produtos" } },
+        { "name": "Listar Produtos por Fabricante", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/produtos?fabricanteId=1" } },
+        { "name": "Listar Produtos Paginados", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/produtos/paged?nome=Produto&page=0&size=10" }, "description": "Pagina resultados com filtros opcionais (nome, fabricanteId). Usa parâmetros padrão do Spring: page, size, sort." },
+        { "name": "Buscar Produto por ID", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/produtos/1" } },
         {
           "name": "Criar Produto",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"nome\": \"Produto Teste\",\n  \"codigoBarras\": \"9998887776665\",\n  \"fabricanteId\": 1,\n  \"preco\": 19.9,\n  \"estoque\": 10\n}"
             },
-            "url": "http://localhost:8081/api/produtos"
+            "url": "{{baseUrl}}/api/produtos"
           }
         },
         {
           "name": "Atualizar Produto",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"nome\": \"Produto Atualizado\",\n  \"codigoBarras\": \"9998887776665\",\n  \"fabricanteId\": 1,\n  \"preco\": 29.9,\n  \"estoque\": 15\n}"
             },
-            "url": "http://localhost:8081/api/produtos/1"
+            "url": "{{baseUrl}}/api/produtos/1"
           }
         },
-        {
-          "name": "Excluir Produto",
-          "request": { "method": "DELETE", "header": [], "url": "http://localhost:8081/api/produtos/1" }
-        },
-        {
-          "name": "Relatório por Fabricante (nome)",
-          "request": { "method": "GET", "header": [], "url": "http://localhost:8081/api/produtos/relatorio" },
-          "description": "Retorna produtos agrupados por nome do fabricante (as chaves do mapa são os nomes)"
-        }
+        { "name": "Excluir Produto", "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/api/produtos/1" } },
+        { "name": "Relatório por Fabricante (nome)", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/produtos/relatorio" }, "description": "Retorna produtos agrupados por nome do fabricante (as chaves do mapa são os nomes)" }
       ]
     },
     {
       "name": "BFF",
       "item": [
-        {
-          "name": "Listar Produtos via BFF",
-          "request": { "method": "GET", "header": [], "url": "http://localhost:8081/api/bff/produtos" }
-        },
-        {
-          "name": "Listar Produtos Paginados via BFF",
-          "request": { "method": "GET", "header": [], "url": "http://localhost:8081/api/bff/produtos/paged?nome=Produto&page=0&size=10" }
-        },
-        {
-          "name": "Relatório por Fabricante via BFF (nome)",
-          "request": { "method": "GET", "header": [], "url": "http://localhost:8081/api/bff/produtos/relatorio" }
-        },
-        {
-          "name": "Listar Fabricantes via BFF",
-          "request": { "method": "GET", "header": [], "url": "http://localhost:8081/api/bff/fabricantes" }
-        }
+        { "name": "Listar Produtos via BFF", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/bff/produtos" } },
+        { "name": "Listar Produtos Paginados via BFF", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/bff/produtos/paged?nome=Produto&page=0&size=10" } },
+        { "name": "Relatório por Fabricante via BFF (nome)", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/bff/produtos/relatorio" } },
+        { "name": "Listar Fabricantes via BFF", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/bff/fabricantes" } }
       ]
     }
   ]

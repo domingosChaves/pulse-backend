@@ -1,6 +1,6 @@
 -- Alinhar sequências de IDs ao máximo existente (idempotente e robusto)
-SELECT setval(pg_get_serial_sequence('fabricantes','id'), COALESCE((SELECT MAX(id)+1 FROM fabricantes), 1), false);
-SELECT setval(pg_get_serial_sequence('produtos','id'),   COALESCE((SELECT MAX(id)+1 FROM produtos),     1), false);
+SELECT setval(pg_get_serial_sequence('fabricantes','id'), COALESCE((SELECT MAX(id) FROM fabricantes), 0), true);
+SELECT setval(pg_get_serial_sequence('produtos','id'),   COALESCE((SELECT MAX(id) FROM produtos),     0), true);
 
 -- Fabricantes base (presentes no data.sql do H2) também para Docker
 INSERT INTO fabricantes (nome, cnpj, endereco, telefone, contato)
