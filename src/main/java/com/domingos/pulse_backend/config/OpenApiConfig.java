@@ -8,6 +8,10 @@ import io.swagger.v3.oas.models.OpenAPI;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configura as informações básicas do OpenAPI/Swagger da aplicação,
+ * incluindo título, versão, contato e link do repositório.
+ */
 @Configuration
 public class OpenApiConfig {
 
@@ -26,4 +30,3 @@ public class OpenApiConfig {
                         .url("https://github.com/domingosChaves/pulse-backend"));
     }
 }
-

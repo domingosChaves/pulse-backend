@@ -3,7 +3,7 @@
     "_postman_id": "pulse-backend-collection",
     "name": "Pulse Backend API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Coleção Postman com endpoints de Fabricantes, Produtos e BFF"
+    "description": "Coleção Postman com endpoints de Fabricantes, Produtos e BFF (inclui paginação e relatório por nome do fabricante)"
   },
   "item": [
     {
@@ -11,11 +11,11 @@
       "item": [
         {
           "name": "Listar Fabricantes",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "http://localhost:8081/api/fabricantes"
-          }
+          "request": { "method": "GET", "header": [], "url": "http://localhost:8081/api/fabricantes" }
+        },
+        {
+          "name": "Buscar Fabricante por ID",
+          "request": { "method": "GET", "header": [], "url": "http://localhost:8081/api/fabricantes/1" }
         },
         {
           "name": "Criar Fabricante",
@@ -28,6 +28,22 @@
             },
             "url": "http://localhost:8081/api/fabricantes"
           }
+        },
+        {
+          "name": "Atualizar Fabricante",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"ACME Atualizada\",\n  \"cnpj\": \"11222333000181\",\n  \"endereco\": \"Rua X, 123\",\n  \"telefone\": \"(11)99999-0001\"\n}"
+            },
+            "url": "http://localhost:8081/api/fabricantes/1"
+          }
+        },
+        {
+          "name": "Excluir Fabricante",
+          "request": { "method": "DELETE", "header": [], "url": "http://localhost:8081/api/fabricantes/1" }
         }
       ]
     },
@@ -37,6 +53,19 @@
         {
           "name": "Listar Produtos",
           "request": { "method": "GET", "header": [], "url": "http://localhost:8081/api/produtos" }
+        },
+        {
+          "name": "Listar Produtos por Fabricante",
+          "request": { "method": "GET", "header": [], "url": "http://localhost:8081/api/produtos?fabricanteId=1" }
+        },
+        {
+          "name": "Listar Produtos Paginados",
+          "request": { "method": "GET", "header": [], "url": "http://localhost:8081/api/produtos/paged?nome=Produto&page=0&size=10" },
+          "description": "Pagina resultados com filtros opcionais (nome, fabricanteId). Usa parâmetros padrão do Spring: page, size, sort."
+        },
+        {
+          "name": "Buscar Produto por ID",
+          "request": { "method": "GET", "header": [], "url": "http://localhost:8081/api/produtos/1" }
         },
         {
           "name": "Criar Produto",
@@ -51,13 +80,25 @@
           }
         },
         {
-          "name": "Relatorio Agrupado por Fabricante",
+          "name": "Atualizar Produto",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "http://localhost:8081/api/produtos/relatorio"
-          },
-          "description": "Retorna produtos agrupados por fabricante (chaves = fabricanteId)"
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Produto Atualizado\",\n  \"codigoBarras\": \"9998887776665\",\n  \"fabricanteId\": 1,\n  \"preco\": 29.9,\n  \"estoque\": 15\n}"
+            },
+            "url": "http://localhost:8081/api/produtos/1"
+          }
+        },
+        {
+          "name": "Excluir Produto",
+          "request": { "method": "DELETE", "header": [], "url": "http://localhost:8081/api/produtos/1" }
+        },
+        {
+          "name": "Relatório por Fabricante (nome)",
+          "request": { "method": "GET", "header": [], "url": "http://localhost:8081/api/produtos/relatorio" },
+          "description": "Retorna produtos agrupados por nome do fabricante (as chaves do mapa são os nomes)"
         }
       ]
     },
@@ -67,6 +108,14 @@
         {
           "name": "Listar Produtos via BFF",
           "request": { "method": "GET", "header": [], "url": "http://localhost:8081/api/bff/produtos" }
+        },
+        {
+          "name": "Listar Produtos Paginados via BFF",
+          "request": { "method": "GET", "header": [], "url": "http://localhost:8081/api/bff/produtos/paged?nome=Produto&page=0&size=10" }
+        },
+        {
+          "name": "Relatório por Fabricante via BFF (nome)",
+          "request": { "method": "GET", "header": [], "url": "http://localhost:8081/api/bff/produtos/relatorio" }
         },
         {
           "name": "Listar Fabricantes via BFF",

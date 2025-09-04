@@ -1,12 +1,19 @@
 package com.domingos.pulse_backend.produto;
 
 import java.util.List;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(name = "PageResponse", description = "Estrutura de resposta paginada")
 public class PageResponse<T> {
+    @Schema(description = "Conteúdo da página")
     private List<T> content;
+    @Schema(description = "Total de elementos")
     private long totalElements;
+    @Schema(description = "Total de páginas")
     private int totalPages;
+    @Schema(description = "Número da página (0-based)")
     private int number;
+    @Schema(description = "Tamanho da página")
     private int size;
 
     public PageResponse() {}
@@ -22,4 +29,3 @@ public class PageResponse<T> {
     public int getSize() { return size; }
     public void setSize(int size) { this.size = size; }
 }
-

@@ -1,5 +1,7 @@
 package com.domingos.pulse_backend.produto;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,8 +20,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/produtos")
 @Validated
+@Tag(name = "Produtos", description = "Operações para gerenciamento de produtos")
 public class ProdutoController {
-
 
     private final com.domingos.pulse_backend.produto.port.ProdutoUseCase service;
 
@@ -28,6 +30,7 @@ public class ProdutoController {
     }
 
     @PostMapping
+    @Operation(summary = "Criar produto", description = "Cria um novo produto vinculado a um fabricante")
     public ResponseEntity<ProdutoResponse> criar(@Valid @RequestBody ProdutoDTO dto) {
         Produto criado = service.criar(dto);
         ProdutoResponse resp = toResponse(criado);
@@ -38,12 +41,14 @@ public class ProdutoController {
     }
 
     @GetMapping
+    @Operation(summary = "Listar produtos", description = "Lista todos os produtos; pode filtrar por fabricanteId")
     public List<ProdutoResponse> listar(@RequestParam(name = "fabricanteId", required = false) Long fabricanteId) {
         List<Produto> produtos = (fabricanteId == null) ? service.listar() : service.listarPorFabricante(fabricanteId);
         return produtos.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @GetMapping("/paged")
+    @Operation(summary = "Listar produtos paginados", description = "Suporta filtros por nome e fabricanteId; utiliza parâmetros padrão de paginação do Spring (page, size, sort)")
     public Page<ProdutoResponse> listarPaged(
             @RequestParam(name = "nome", required = false) String nome,
             @RequestParam(name = "fabricanteId", required = false) Long fabricanteId,
@@ -61,23 +66,27 @@ public class ProdutoController {
     }
 
     @GetMapping("/relatorio")
+    @Operation(summary = "Relatório de produtos por fabricante", description = "Agrupa produtos por nome do fabricante (chave do mapa = nome do fabricante)")
     public Map<String, List<ProdutoResponse>> relatorioAgrupadoPorFabricante() {
         return service.agruparPorFabricante().entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().map(this::toResponse).collect(Collectors.toList())));
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Buscar produto por ID")
     public ProdutoResponse buscar(@PathVariable Long id) {
         return toResponse(service.buscarPorId(id));
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Atualizar produto")
     public ProdutoResponse atualizar(@PathVariable Long id, @Valid @RequestBody ProdutoDTO dto) {
         return toResponse(service.atualizar(id, dto));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Excluir produto")
     public void excluir(@PathVariable Long id) {
         service.excluir(id);
     }

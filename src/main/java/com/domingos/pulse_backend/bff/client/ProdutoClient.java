@@ -9,25 +9,37 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Cliente Feign para consumir os endpoints de Produtos do backend.
+ * A URL base é configurada via propriedade bff.backend.url.
+ */
 @FeignClient(name = "produto-client", url = "${bff.backend.url}")
 public interface ProdutoClient {
 
+    /** Cria um novo produto. */
     @PostMapping("/api/produtos")
     ProdutoResponse criar(@RequestBody ProdutoDTO dto);
 
+    /** Lista todos os produtos. */
     @GetMapping("/api/produtos")
     List<ProdutoResponse> listar();
 
+    /** Busca um produto pelo ID. */
     @GetMapping("/api/produtos/{id}")
     ProdutoResponse buscar(@PathVariable("id") Long id);
 
+    /** Atualiza um produto existente. */
     @PutMapping("/api/produtos/{id}")
     ProdutoResponse atualizar(@PathVariable("id") Long id, @RequestBody ProdutoDTO dto);
 
+    /** Exclui um produto pelo ID. */
     @DeleteMapping("/api/produtos/{id}")
     void excluir(@PathVariable("id") Long id);
 
-    // Paged endpoint: aceita parâmetros opcionais nome, fabricanteId, page, size, sort
+    /**
+     * Lista produtos paginados com filtros opcionais.
+     * Parâmetros: nome, fabricanteId, page, size, sort
+     */
     @GetMapping("/api/produtos/paged")
     PageResponse<ProdutoResponse> paged(
             @RequestParam(name = "nome", required = false) String nome,
@@ -37,7 +49,7 @@ public interface ProdutoClient {
             @RequestParam(name = "sort", required = false) String sort
     );
 
-    // Relatorio agrupado por nome do fabricante
+    /** Retorna relatório agrupado por nome do fabricante. */
     @GetMapping("/api/produtos/relatorio")
     Map<String, List<ProdutoResponse>> relatorio();
 }

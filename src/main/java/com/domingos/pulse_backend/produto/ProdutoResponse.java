@@ -1,15 +1,25 @@
 package com.domingos.pulse_backend.produto;
 
 import java.math.BigDecimal;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(name = "ProdutoResponse", description = "Representa um produto retornado pela API")
 public class ProdutoResponse {
+    @Schema(description = "Identificador do produto", example = "1")
     private Long id;
+    @Schema(description = "Nome do produto", example = "Produto Alpha")
     private String nome;
+    @Schema(description = "Código de barras", example = "7891234567895")
     private String codigoBarras;
+    @Schema(description = "Descrição do produto", example = "Descrição breve do produto")
     private String descricao;
+    @Schema(description = "Preço do produto", example = "19.90")
     private BigDecimal preco;
+    @Schema(description = "Quantidade em estoque", example = "10")
     private Integer estoque;
+    @Schema(description = "ID do fabricante do produto", example = "1")
     private Long fabricanteId;
+    @Schema(description = "Nome do fabricante do produto", example = "ACME Indústria")
     private String fabricanteNome;
 
     public ProdutoResponse() {}
@@ -43,4 +53,3 @@ public class ProdutoResponse {
     public String getFabricanteNome() { return fabricanteNome; }
     public void setFabricanteNome(String fabricanteNome) { this.fabricanteNome = fabricanteNome; }
 }
-
