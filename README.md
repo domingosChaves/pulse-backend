@@ -22,9 +22,8 @@ Este projeto expõe CRUD completo de Fabricantes e Produtos, incluindo:
 - Regras de negócio básicas (unicidade de CNPJ e de código de barras).
 - Relatório de produtos agrupado por nome do fabricante.
 - Paginação e filtros por nome/fabricante.
-- BFF com FeignClient para centralizar chamadas do frontend.
-- Documentação interativa via Swagger UI e coleção Postman.
-- Execução com H2 (dev) e Postgres (Docker).
+- BFF com FeignClient.
+- Seeds diferenciados para dev (H2) e Docker (Postgres) com carga massiva no Docker.
 
 ## Arquitetura e módulos
 - Arquitetura Hexagonal (Ports & Adapters):
@@ -84,7 +83,7 @@ Requisitos: Docker e Docker Compose.
 ```bash
 docker compose build
 ```
-- Subir serviços (app + banco):
+- Subir serviços (app + banco) já com base populada:
 ```bash
 docker compose up -d
 ```
@@ -97,13 +96,11 @@ docker compose logs -f app
   - Swagger UI: http://localhost:8081/swagger-ui.html
   - Postgres (host): localhost:5432 | DB: `pulse` | user: `pulse` | pass: `pulse`
 
-Profile Docker: `src/main/resources/application-docker.properties` (usa Postgres e executa `data.sql`).
+Profile Docker: `src/main/resources/application-docker.properties` (usa Postgres e executa `data-docker.sql`, com muitos registros e ON CONFLICT para idempotência).
 
 ## Banco de dados e dados iniciais
-- H2 (profile padrão) e Postgres (profile `docker`).
-- Seeds em `src/main/resources/data.sql`:
-  - 2 fabricantes (ACME Indústria, Beta Ltda).
-  - 3 produtos vinculados aos fabricantes.
+- H2 (profile padrão): executa `data.sql`.
+- Postgres (profile `docker`): executa `data-docker.sql` com volume maior de dados (fabricantes e dezenas de produtos) para testes de paginação/relatórios.
 
 ## Endpoints principais
 ### Fabricantes (`/api/fabricantes`)
@@ -165,10 +162,10 @@ git commit -m "feat: descrição curta e clara" -m "Issue: #123" -m "Link: https
 - Docker build falhou por encoding: o projeto está padronizado em UTF-8 no Maven; evite caracteres com encoding inconsistente em `.properties`.
 - Compose: remova a chave `version` (já removida aqui) para evitar avisos; use `docker compose build && docker compose up -d`.
 - Porta: por padrão usamos `8081`; ajuste `server.port` se necessário.
+- Docker sobe sem dados: garanta que o profile `docker` está ativo no container (já definido no Dockerfile/compose) e que o `data-docker.sql` está presente no classpath.
 
 ---
 
 ## Contatos e licenças
 - Swagger UI expõe contato do time (OpenAPI Info).
 - Licença: MIT (arquivo `LICENSE`).
-
