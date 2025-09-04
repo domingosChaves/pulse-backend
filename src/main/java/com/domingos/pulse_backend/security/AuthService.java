@@ -60,8 +60,14 @@ public class AuthService {
     }
 
     public void ensureDefaultUser() {
+        // Admin padrão
         usuarioRepository.findByUsername("admin").orElseGet(() -> {
             Usuario u = new Usuario("admin", passwordEncoder.encode("admin"), UsuarioStatus.ATIVO, "ROLE_ADMIN,ROLE_USER", "LOCAL");
+            return usuarioRepository.save(u);
+        });
+        // Usuário de teste padrão
+        usuarioRepository.findByUsername("tester").orElseGet(() -> {
+            Usuario u = new Usuario("tester", passwordEncoder.encode("test123"), UsuarioStatus.ATIVO, "ROLE_USER", "LOCAL");
             return usuarioRepository.save(u);
         });
     }
