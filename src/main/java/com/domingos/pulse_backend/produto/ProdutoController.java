@@ -2,6 +2,10 @@ package com.domingos.pulse_backend.produto;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +35,14 @@ public class ProdutoController {
 
     @PostMapping
     @Operation(summary = "Criar produto", description = "Cria um novo produto vinculado a um fabricante")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Criado",
+                    content = @Content(schema = @Schema(implementation = ProdutoResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Requisição inválida",
+                    content = @Content(schema = @Schema(implementation = com.domingos.pulse_backend.api.ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Fabricante não encontrado",
+                    content = @Content(schema = @Schema(implementation = com.domingos.pulse_backend.api.ErrorResponse.class)))
+    })
     public ResponseEntity<ProdutoResponse> criar(@Valid @RequestBody ProdutoDTO dto) {
         Produto criado = service.criar(dto);
         ProdutoResponse resp = toResponse(criado);
@@ -42,6 +54,9 @@ public class ProdutoController {
 
     @GetMapping
     @Operation(summary = "Listar produtos", description = "Lista todos os produtos; pode filtrar por fabricanteId")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK")
+    })
     public List<ProdutoResponse> listar(@RequestParam(name = "fabricanteId", required = false) Long fabricanteId) {
         List<Produto> produtos = (fabricanteId == null) ? service.listar() : service.listarPorFabricante(fabricanteId);
         return produtos.stream().map(this::toResponse).collect(Collectors.toList());
@@ -49,6 +64,9 @@ public class ProdutoController {
 
     @GetMapping("/paged")
     @Operation(summary = "Listar produtos paginados", description = "Suporta filtros por nome e fabricanteId; utiliza parâmetros padrão de paginação do Spring (page, size, sort)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK")
+    })
     public Page<ProdutoResponse> listarPaged(
             @RequestParam(name = "nome", required = false) String nome,
             @RequestParam(name = "fabricanteId", required = false) Long fabricanteId,
@@ -67,6 +85,9 @@ public class ProdutoController {
 
     @GetMapping("/relatorio")
     @Operation(summary = "Relatório de produtos por fabricante", description = "Agrupa produtos por nome do fabricante (chave do mapa = nome do fabricante)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK")
+    })
     public Map<String, List<ProdutoResponse>> relatorioAgrupadoPorFabricante() {
         return service.agruparPorFabricante().entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().map(this::toResponse).collect(Collectors.toList())));
@@ -74,12 +95,26 @@ public class ProdutoController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Buscar produto por ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK",
+                    content = @Content(schema = @Schema(implementation = ProdutoResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Não encontrado",
+                    content = @Content(schema = @Schema(implementation = com.domingos.pulse_backend.api.ErrorResponse.class)))
+    })
     public ProdutoResponse buscar(@PathVariable Long id) {
         return toResponse(service.buscarPorId(id));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar produto")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Atualizado",
+                    content = @Content(schema = @Schema(implementation = ProdutoResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Requisição inválida",
+                    content = @Content(schema = @Schema(implementation = com.domingos.pulse_backend.api.ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Não encontrado",
+                    content = @Content(schema = @Schema(implementation = com.domingos.pulse_backend.api.ErrorResponse.class)))
+    })
     public ProdutoResponse atualizar(@PathVariable Long id, @Valid @RequestBody ProdutoDTO dto) {
         return toResponse(service.atualizar(id, dto));
     }
@@ -87,6 +122,11 @@ public class ProdutoController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Excluir produto")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Excluído sem conteúdo"),
+            @ApiResponse(responseCode = "404", description = "Não encontrado",
+                    content = @Content(schema = @Schema(implementation = com.domingos.pulse_backend.api.ErrorResponse.class)))
+    })
     public void excluir(@PathVariable Long id) {
         service.excluir(id);
     }
