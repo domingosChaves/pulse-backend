@@ -3,6 +3,7 @@ package com.domingos.pulse_backend.produto;
 import com.domingos.pulse_backend.fabricante.Fabricante;
 import com.domingos.pulse_backend.fabricante.port.FabricantePort;
 import com.domingos.pulse_backend.produto.port.ProdutoPort;
+import com.domingos.pulse_backend.produto.port.ProdutoUseCase;
 import com.domingos.pulse_backend.fabricante.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class ProdutoService {
+public class ProdutoService implements ProdutoUseCase {
 
     private final ProdutoPort produtoPort;
     private final FabricantePort fabricantePort;
@@ -25,6 +26,7 @@ public class ProdutoService {
         this.fabricantePort = fabricantePort;
     }
 
+    @Override
     public Produto criar(ProdutoDTO dto) {
         produtoPort.findByCodigoBarras(dto.getCodigoBarras()).ifPresent(p -> {
             throw new IllegalArgumentException("Código de barras já cadastrado");
@@ -35,30 +37,37 @@ public class ProdutoService {
         return produtoPort.save(p);
     }
 
+    @Override
     public List<Produto> listar() {
         return produtoPort.findAll();
     }
 
+    @Override
     public Page<Produto> listar(Pageable pageable) {
         return produtoPort.findAll(pageable);
     }
 
+    @Override
     public Page<Produto> buscarPorNome(String nome, Pageable pageable) {
         return produtoPort.findByNomeContainingIgnoreCase(nome, pageable);
     }
 
+    @Override
     public List<Produto> listarPorFabricante(Long fabricanteId) {
         return produtoPort.findByFabricanteId(fabricanteId);
     }
 
+    @Override
     public Page<Produto> listarPorFabricantePaged(Long fabricanteId, Pageable pageable) {
         return produtoPort.findByFabricanteId(fabricanteId, pageable);
     }
 
+    @Override
     public Produto buscarPorId(Long id) {
         return produtoPort.findById(id).orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com id: " + id));
     }
 
+    @Override
     public Produto atualizar(Long id, ProdutoDTO dto) {
         Produto existente = buscarPorId(id);
         if (!existente.getCodigoBarras().equals(dto.getCodigoBarras())) {
@@ -79,11 +88,13 @@ public class ProdutoService {
         return produtoPort.save(existente);
     }
 
+    @Override
     public void excluir(Long id) {
         Produto existente = buscarPorId(id);
         produtoPort.delete(existente);
     }
 
+    @Override
     public Map<String, List<Produto>> agruparPorFabricante() {
         return produtoPort.findAll().stream()
                 .collect(Collectors.groupingBy(p -> {

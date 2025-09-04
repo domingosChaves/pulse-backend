@@ -52,8 +52,8 @@ class ProdutoControllerIT {
     void relatorioAgrupadoPorFabricante_ok() throws Exception {
         mockMvc.perform(get("/api/produtos/relatorio").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath(".['ACME Indústria']", hasSize(2)))
-                .andExpect(jsonPath(".['Beta Ltda']", hasSize(1)));
+                .andExpect(jsonPath("$['ACME Indústria']", hasSize(2)))
+                .andExpect(jsonPath("$['Beta Ltda']", hasSize(1)));
     }
 
     @Test
@@ -112,4 +112,3 @@ class ProdutoControllerIT {
                 .andExpect(jsonPath("$.error", containsString("não encontrado")));
     }
 }
-

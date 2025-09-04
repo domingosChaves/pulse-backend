@@ -1,6 +1,7 @@
 package com.domingos.pulse_backend.fabricante;
 
 import com.domingos.pulse_backend.fabricante.port.FabricantePort;
+import com.domingos.pulse_backend.fabricante.port.FabricanteUseCase;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -8,7 +9,7 @@ import java.util.List;
 
 @Service
 @Transactional
-public class FabricanteService {
+public class FabricanteService implements FabricanteUseCase {
 
     private final FabricantePort port;
 
@@ -16,6 +17,7 @@ public class FabricanteService {
         this.port = port;
     }
 
+    @Override
     public Fabricante criar(FabricanteDTO dto) {
         // checar cnpj duplicado
         port.findByCnpj(dto.getCnpj()).ifPresent(f -> {
@@ -25,14 +27,17 @@ public class FabricanteService {
         return port.save(f);
     }
 
+    @Override
     public List<Fabricante> listar() {
         return port.findAll();
     }
 
+    @Override
     public Fabricante buscarPorId(Long id) {
         return port.findById(id).orElseThrow(() -> new ResourceNotFoundException("Fabricante não encontrado com id: " + id));
     }
 
+    @Override
     public Fabricante atualizar(Long id, FabricanteDTO dto) {
         Fabricante existente = buscarPorId(id);
         // se cnpj alterado, verificar duplicidade
@@ -49,6 +54,7 @@ public class FabricanteService {
         return port.save(existente);
     }
 
+    @Override
     public void excluir(Long id) {
         Fabricante existente = buscarPorId(id);
         port.delete(existente);
