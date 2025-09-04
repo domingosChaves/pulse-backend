@@ -67,7 +67,7 @@ public class ProdutoController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK")
     })
-    public Page<ProdutoResponse> listarPaged(
+    public PageResponse<ProdutoResponse> listarPaged(
             @RequestParam(name = "nome", required = false) String nome,
             @RequestParam(name = "fabricanteId", required = false) Long fabricanteId,
             Pageable pageable
@@ -80,7 +80,14 @@ public class ProdutoController {
         } else {
             page = service.listar(pageable);
         }
-        return page.map(this::toResponse);
+        PageResponse<ProdutoResponse> resp = new PageResponse<>();
+        resp.setContent(page.getContent().stream().map(this::toResponse).collect(Collectors.toList()));
+        resp.setPage(page.getNumber());
+        resp.setSize(page.getSize());
+        resp.setTotalElements(page.getTotalElements());
+        resp.setTotalPages(page.getTotalPages());
+        resp.setSort(page.getSort() != null ? page.getSort().toString() : null);
+        return resp;
     }
 
     @GetMapping("/relatorio")

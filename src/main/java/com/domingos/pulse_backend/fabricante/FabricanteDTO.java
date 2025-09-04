@@ -10,9 +10,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class FabricanteDTO {
 
     @NotBlank(message = "Nome é obrigatório")
-    @Size(max = 255)
+    @Size(max = 120)
     @Schema(description = "Nome do fabricante", example = "ACME Indústria")
     private String nome;
+
+    @Size(max = 500)
+    @Schema(description = "Descrição opcional do fabricante", example = "Fabricante de materiais de escritório")
+    private String descricao;
 
     @NotBlank(message = "CNPJ é obrigatório")
     @Size(max = 20)
@@ -36,6 +40,9 @@ public class FabricanteDTO {
     public void setNome(String nome) {
         this.nome = nome;
     }
+
+    public String getDescricao() { return descricao; }
+    public void setDescricao(String descricao) { this.descricao = descricao; }
 
     public String getCnpj() {
         return cnpj;

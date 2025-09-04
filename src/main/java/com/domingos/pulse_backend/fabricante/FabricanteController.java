@@ -16,6 +16,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/fabricantes")
@@ -33,16 +34,16 @@ public class FabricanteController {
     @Operation(summary = "Criar fabricante")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Criado com sucesso",
-                    content = @Content(schema = @Schema(implementation = Fabricante.class))),
+                    content = @Content(schema = @Schema(implementation = FabricanteResponse.class))),
             @ApiResponse(responseCode = "400", description = "Requisição inválida",
                     content = @Content(schema = @Schema(implementation = com.domingos.pulse_backend.api.ErrorResponse.class)))
     })
-    public ResponseEntity<Fabricante> criar(@Valid @RequestBody FabricanteDTO dto) {
+    public ResponseEntity<FabricanteResponse> criar(@Valid @RequestBody FabricanteDTO dto) {
         Fabricante criado = service.criar(dto);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(criado.getId()).toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(location);
-        return new ResponseEntity<>(criado, headers, HttpStatus.CREATED);
+        return new ResponseEntity<>(toResponse(criado), headers, HttpStatus.CREATED);
     }
 
     @GetMapping
@@ -50,34 +51,34 @@ public class FabricanteController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK")
     })
-    public List<Fabricante> listar() {
-        return service.listar();
+    public List<FabricanteResponse> listar() {
+        return service.listar().stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Buscar fabricante por ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK",
-                    content = @Content(schema = @Schema(implementation = Fabricante.class))),
+                    content = @Content(schema = @Schema(implementation = FabricanteResponse.class))),
             @ApiResponse(responseCode = "404", description = "Não encontrado",
                     content = @Content(schema = @Schema(implementation = com.domingos.pulse_backend.api.ErrorResponse.class)))
     })
-    public Fabricante buscar(@PathVariable Long id) {
-        return service.buscarPorId(id);
+    public FabricanteResponse buscar(@PathVariable Long id) {
+        return toResponse(service.buscarPorId(id));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar fabricante")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Atualizado",
-                content = @Content(schema = @Schema(implementation = Fabricante.class))),
+                content = @Content(schema = @Schema(implementation = FabricanteResponse.class))),
         @ApiResponse(responseCode = "400", description = "Requisição inválida",
                 content = @Content(schema = @Schema(implementation = com.domingos.pulse_backend.api.ErrorResponse.class))),
         @ApiResponse(responseCode = "404", description = "Não encontrado",
                 content = @Content(schema = @Schema(implementation = com.domingos.pulse_backend.api.ErrorResponse.class)))
     })
-    public Fabricante atualizar(@PathVariable Long id, @Valid @RequestBody FabricanteDTO dto) {
-        return service.atualizar(id, dto);
+    public FabricanteResponse atualizar(@PathVariable Long id, @Valid @RequestBody FabricanteDTO dto) {
+        return toResponse(service.atualizar(id, dto));
     }
 
     @DeleteMapping("/{id}")
@@ -90,5 +91,9 @@ public class FabricanteController {
     })
     public void excluir(@PathVariable Long id) {
         service.excluir(id);
+    }
+
+    private FabricanteResponse toResponse(Fabricante f) {
+        return new FabricanteResponse(f.getId(), f.getNome(), f.getDescricao());
     }
 }

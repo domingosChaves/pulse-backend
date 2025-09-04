@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class ProdutoDTO {
 
     @NotBlank(message = "Nome do produto é obrigatório")
-    @Size(max = 255)
+    @Size(max = 120)
     @Schema(description = "Nome do produto", example = "Produto Alpha")
     private String nome;
 
@@ -21,6 +21,7 @@ public class ProdutoDTO {
     @Schema(description = "Código de barras do produto", example = "7891234567895")
     private String codigoBarras;
 
+    @Size(max = 500)
     @Schema(description = "Descrição opcional do produto", example = "Descrição breve do produto")
     private String descricao;
 

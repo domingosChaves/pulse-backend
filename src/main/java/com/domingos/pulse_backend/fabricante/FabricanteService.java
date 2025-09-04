@@ -24,6 +24,7 @@ public class FabricanteService implements FabricanteUseCase {
             throw new IllegalArgumentException("CNPJ já cadastrado");
         });
         Fabricante f = new Fabricante(dto.getNome(), dto.getCnpj(), dto.getEndereco(), dto.getTelefone(), dto.getContato());
+        f.setDescricao(dto.getDescricao());
         return port.save(f);
     }
 
@@ -51,6 +52,7 @@ public class FabricanteService implements FabricanteUseCase {
         existente.setEndereco(dto.getEndereco());
         existente.setTelefone(dto.getTelefone());
         existente.setContato(dto.getContato());
+        existente.setDescricao(dto.getDescricao());
         return port.save(existente);
     }
 

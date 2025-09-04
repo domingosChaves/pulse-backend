@@ -22,6 +22,9 @@ public class Fabricante {
     private String telefone;
     private String contato;
 
+    @Column(length = 500)
+    private String descricao;
+
     public Fabricante() {}
 
     public Fabricante(String nome, String cnpj, String endereco, String telefone, String contato) {
@@ -80,5 +83,7 @@ public class Fabricante {
     public void setContato(String contato) {
         this.contato = contato;
     }
-}
 
+    public String getDescricao() { return descricao; }
+    public void setDescricao(String descricao) { this.descricao = descricao; }
+}

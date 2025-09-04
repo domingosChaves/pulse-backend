@@ -43,7 +43,7 @@ public class JwtService {
         claims.put("provedor", u.getProvedor());
         claims.put("typ", "access");
         Instant now = Instant.now();
-        Instant exp = now.plusSeconds(props.getAccessTtl() > 0 ? props.getAccessTtl() : 900); // 15min default
+        Instant exp = now.plusSeconds(props.getAccessTtl() > 0 ? props.getAccessTtl() : 3600); // 60min default
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(u.getUsername())
@@ -83,7 +83,7 @@ public class JwtService {
     public TokenResponse tokensFor(Usuario u) {
         String access = generateAccessToken(u);
         String refresh = generateRefreshToken(u);
-        long expiresIn = props.getAccessTtl() > 0 ? props.getAccessTtl() : 900;
+        long expiresIn = props.getAccessTtl() > 0 ? props.getAccessTtl() : 3600;
         return new TokenResponse(access, refresh, expiresIn);
     }
 }

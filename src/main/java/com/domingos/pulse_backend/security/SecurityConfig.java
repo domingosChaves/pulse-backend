@@ -41,12 +41,18 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            OAuth2SuccessHandler oAuth2SuccessHandler,
                                            OAuth2FailureHandler oAuth2FailureHandler,
-                                           ObjectProvider<ClientRegistrationRepository> clientRegs) throws Exception {
+                                           ObjectProvider<ClientRegistrationRepository> clientRegs,
+                                           JsonAuthEntryPoint jsonAuthEntryPoint,
+                                           JsonAccessDeniedHandler jsonAccessDeniedHandler) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .headers(h -> h.frameOptions(f -> f.disable())) // H2 console
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .cors(Customizer.withDefaults())
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint(jsonAuthEntryPoint)
+                .accessDeniedHandler(jsonAccessDeniedHandler)
+            )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(new AntPathRequestMatcher("/health"),
                                  new AntPathRequestMatcher("/h2-console/**"),
