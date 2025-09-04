@@ -1,3 +1,7 @@
+-- Alinhar sequências de IDs ao máximo existente (idempotente e robusto)
+SELECT setval(pg_get_serial_sequence('fabricantes','id'), COALESCE((SELECT MAX(id)+1 FROM fabricantes), 1), false);
+SELECT setval(pg_get_serial_sequence('produtos','id'),   COALESCE((SELECT MAX(id)+1 FROM produtos),     1), false);
+
 -- Fabricantes base (presentes no data.sql do H2) também para Docker
 INSERT INTO fabricantes (nome, cnpj, endereco, telefone, contato)
 VALUES ('ACME Indústria', '12345678000199', 'Rua A, 100', '(11)9999-0001', 'João')
@@ -168,13 +172,13 @@ INSERT INTO produtos (nome, codigo_barras, descricao, preco, estoque, fabricante
 SELECT 'Zeta Headset', '1000000010010', 'Headset estéreo', 119.90, 60, id FROM fabricantes WHERE cnpj='88888888000188'
 ON CONFLICT (codigo_barras) DO NOTHING;
 
--- Lote adicional para testar paginação (20 itens rápidos)
-DO $$
-BEGIN
-  FOR i IN 1..20 LOOP
-    INSERT INTO produtos (nome, codigo_barras, descricao, preco, estoque, fabricante_id)
-    SELECT 'Item Paginado ' || i, '20000000' || lpad(i::text, 4, '0'), 'Gerado para testes', 9.90 + i, 10 + i,
-           (SELECT id FROM fabricantes WHERE cnpj='12345678000199')
-    ON CONFLICT (codigo_barras) DO NOTHING;
-  END LOOP;
-END$$;
+-- Lote adicional para testar paginação (20 itens via generate_series)
+INSERT INTO produtos (nome, codigo_barras, descricao, preco, estoque, fabricante_id)
+SELECT 'Item Paginado ' || i,
+       '20000000' || lpad(i::text, 4, '0'),
+       'Gerado para testes',
+       9.90 + i,
+       10 + i,
+       (SELECT id FROM fabricantes WHERE cnpj='12345678000199')
+FROM generate_series(1,20) AS g(i)
+ON CONFLICT (codigo_barras) DO NOTHING;

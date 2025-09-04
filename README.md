@@ -72,6 +72,7 @@ java -jar target/pulse-backend-0.0.1-SNAPSHOT.jar
   - API base: http://localhost:8081
   - Swagger UI: http://localhost:8081/swagger-ui.html
   - OpenAPI JSON: http://localhost:8081/v3/api-docs
+  - Health: http://localhost:8081/health (utilizado pelo healthcheck do Docker)
   - H2 Console: http://localhost:8081/h2-console (JDBC: `jdbc:h2:mem:testdb`, user: `sa`, senha vazia)
 
 Configuração local: `src/main/resources/application.properties` (H2 em memória, data.sql habilitado).
@@ -94,6 +95,7 @@ docker compose logs -f app
 - Endereços úteis (Docker):
   - API base: http://localhost:8081
   - Swagger UI: http://localhost:8081/swagger-ui.html
+  - Health: http://localhost:8081/health (healthcheck via curl no docker-compose)
   - Postgres (host): localhost:5432 | DB: `pulse` | user: `pulse` | pass: `pulse`
 
 Profile Docker: `src/main/resources/application-docker.properties` (usa Postgres e executa `data-docker.sql`, com muitos registros e ON CONFLICT para idempotência).
