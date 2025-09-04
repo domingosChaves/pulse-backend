@@ -13,4 +13,10 @@ public class HealthController {
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("OK");
     }
+
+    @GetMapping("/api/health")
+    @Operation(summary = "Verificação de saúde (com /api)", description = "Endpoint público de healthcheck sob /api", security = {})
+    public ResponseEntity<String> apiHealth() {
+        return ResponseEntity.ok("OK");
+    }
 }

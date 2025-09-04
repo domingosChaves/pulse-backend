@@ -1,6 +1,7 @@
 package com.domingos.pulse_backend.security;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -22,7 +23,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
@@ -31,6 +34,9 @@ public class SecurityConfig {
 
     private final JwtService jwtService;
     private final UsuarioRepository usuarioRepository;
+
+    @Value("${cors.allowed-origins:http://localhost:4200}")
+    private String corsAllowedOrigins;
 
     public SecurityConfig(JwtService jwtService, UsuarioRepository usuarioRepository) {
         this.jwtService = jwtService;
@@ -55,6 +61,7 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(new AntPathRequestMatcher("/health"),
+                                 new AntPathRequestMatcher("/api/health"),
                                  new AntPathRequestMatcher("/h2-console/**"),
                                  new AntPathRequestMatcher("/v3/api-docs/**"),
                                  new AntPathRequestMatcher("/swagger-ui/**"),
@@ -103,9 +110,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(List.of("http://localhost:4200"));
+        List<String> origins = Arrays.stream(corsAllowedOrigins.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+        cfg.setAllowedOrigins(origins);
         cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        cfg.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        cfg.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Correlation-ID"));
+        cfg.setExposedHeaders(List.of("X-Correlation-ID"));
         cfg.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", cfg);

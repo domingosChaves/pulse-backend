@@ -2,6 +2,7 @@ package com.domingos.pulse_backend.produto;
 
 import java.util.List;
 import io.swagger.v3.oas.annotations.media.Schema;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Schema(name = "PageResponse", description = "Estrutura de resposta paginada")
 public class PageResponse<T> {
@@ -32,4 +33,12 @@ public class PageResponse<T> {
     public void setSize(int size) { this.size = size; }
     public String getSort() { return sort; }
     public void setSort(String sort) { this.sort = sort; }
+
+    @JsonIgnore
+    @Deprecated
+    public int getNumber() { return this.page; }
+
+    @JsonIgnore
+    @Deprecated
+    public void setNumber(int number) { this.page = number; }
 }
