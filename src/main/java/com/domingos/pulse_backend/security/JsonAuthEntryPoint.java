@@ -16,7 +16,11 @@ import java.time.LocalDateTime;
 @Component
 public class JsonAuthEntryPoint implements AuthenticationEntryPoint {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
+
+    public JsonAuthEntryPoint(ObjectMapper mapper) {
+        this.mapper = mapper;
+    }
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
@@ -26,4 +30,3 @@ public class JsonAuthEntryPoint implements AuthenticationEntryPoint {
         mapper.writeValue(response.getOutputStream(), body);
     }
 }
-

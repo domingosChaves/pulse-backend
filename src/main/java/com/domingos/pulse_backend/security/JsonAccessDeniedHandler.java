@@ -16,7 +16,11 @@ import java.time.LocalDateTime;
 @Component
 public class JsonAccessDeniedHandler implements AccessDeniedHandler {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
+
+    public JsonAccessDeniedHandler(ObjectMapper mapper) {
+        this.mapper = mapper;
+    }
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
@@ -26,4 +30,3 @@ public class JsonAccessDeniedHandler implements AccessDeniedHandler {
         mapper.writeValue(response.getOutputStream(), body);
     }
 }
-
