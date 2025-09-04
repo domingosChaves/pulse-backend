@@ -21,15 +21,15 @@
       "name": "Autenticação",
       "item": [
         {
-          "name": "Login (obter tokens)",
+          "name": "Registrar (cria e autentica)",
           "request": {
             "method": "POST",
             "header": [ { "key": "Content-Type", "value": "application/json" } ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin\"\n}"
+              "raw": "{\n  \"name\": \"Tester\",\n  \"email\": \"tester@example.com\",\n  \"username\": \"tester\",\n  \"password\": \"test123\"\n}"
             },
-            "url": "{{baseUrl}}/auth/login"
+            "url": "{{baseUrl}}/api/auth/register"
           },
           "event": [
             {
@@ -39,8 +39,7 @@
                   "if (pm.response.code === 200) {",
                   "  try {",
                   "    const data = pm.response.json();",
-                  "    if (data.accessToken) pm.collectionVariables.set('accessToken', data.accessToken);",
-                  "    if (data.refreshToken) pm.collectionVariables.set('refreshToken', data.refreshToken);",
+                  "    if (data.token) pm.collectionVariables.set('accessToken', data.token);",
                   "  } catch (e) { /* ignore */ }",
                   "}"
                 ],
@@ -50,25 +49,81 @@
           ]
         },
         {
-          "name": "Refresh (renovar tokens)",
+          "name": "Login (obter token)",
           "request": {
             "method": "POST",
             "header": [ { "key": "Content-Type", "value": "application/json" } ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+              "raw": "{\n  \"username\": \"tester\",\n  \"password\": \"test123\"\n}"
             },
-            "url": "{{baseUrl}}/auth/refresh"
-          }
+            "url": "{{baseUrl}}/api/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const data = pm.response.json();",
+                  "    if (data.token) pm.collectionVariables.set('accessToken', data.token);",
+                  "  } catch (e) { /* ignore */ }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         },
         {
-          "name": "Providers (Google/GitHub)",
+          "name": "Me (usuário atual)",
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/auth/me" }
+        },
+        {
+          "name": "OAuth Authorize (Google)",
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/auth/providers"
+            "url": "{{baseUrl}}/api/auth/oauth/authorize?provider=google&redirect_uri=http://localhost:4200/auth/callback"
+          }
+        },
+        {
+          "name": "OAuth Callback (troca code → token)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"google\",\n  \"code\": \"PASTE_CODE_HERE\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/oauth/callback"
           },
-          "description": "Retorna as URLs de autorização para login social. Fluxo: chamar /auth/providers → abrir a URL indicada (ex.: /oauth2/authorization/google) → ao autenticar no provedor, o backend retorna os JWTs no corpo da resposta."
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const data = pm.response.json();",
+                  "    if (data.token) pm.collectionVariables.set('accessToken', data.token);",
+                  "  } catch (e) { /* ignore */ }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh (legado)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}" },
+            "url": "{{baseUrl}}/auth/refresh"
+          }
         }
       ]
     },
@@ -130,7 +185,7 @@
             "header": [ { "key": "Content-Type", "value": "application/json" } ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Produto Atualizado\",\n  \"codigoBarras\": \"9998887776665\",\n  \"fabricanteId\": 1,\n  \"preco": 29.9,\n  \"estoque\": 15\n}"
+              "raw": "{\n  \"nome\": \"Produto Atualizado\",\n  \"codigoBarras\": \"9998887776665\",\n  \"fabricanteId\": 1,\n  \"preco\": 29.9,\n  \"estoque\": 15\n}"
             },
             "url": "{{baseUrl}}/api/produtos/1"
           }

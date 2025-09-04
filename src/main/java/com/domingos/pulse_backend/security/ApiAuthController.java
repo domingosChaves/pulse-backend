@@ -41,7 +41,7 @@ public class ApiAuthController {
     }
 
     @PostMapping("/register")
-    @Operation(summary = "Cadastro de usuário")
+    @Operation(summary = "Cadastro de usuário", security = {})
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest req) {
         // Normalizações
         String email = req.getEmail() != null ? req.getEmail().trim().toLowerCase() : null;
@@ -70,7 +70,7 @@ public class ApiAuthController {
     }
 
     @PostMapping("/login")
-    @Operation(summary = "Login tradicional (username/password)")
+    @Operation(summary = "Login tradicional (username/password)", security = {})
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest req) {
         var tokens = authService.login(req.getUsername(), req.getPassword());
         var user = usuarioRepository.findByUsername(req.getUsername()).orElseThrow();
@@ -90,7 +90,7 @@ public class ApiAuthController {
     }
 
     @GetMapping("/oauth/authorize")
-    @Operation(summary = "Inicia fluxo OAuth e armazena redirect autorizado")
+    @Operation(summary = "Inicia fluxo OAuth e armazena redirect autorizado", security = {})
     public ResponseEntity<Void> oauthAuthorize(@RequestParam("provider") String provider,
                                                @RequestParam("redirect_uri") String redirect,
                                                HttpServletResponse response) {
@@ -114,7 +114,7 @@ public class ApiAuthController {
     }
 
     @PostMapping("/oauth/callback")
-    @Operation(summary = "Callback manual OAuth: troca code por perfil e retorna token+user")
+    @Operation(summary = "Callback manual OAuth: troca code por perfil e retorna token+user", security = {})
     public ResponseEntity<AuthResponse> oauthCallback(@Valid @RequestBody OAuthCallbackRequest body) {
         String provider = body.getProvider().toLowerCase();
         if (!List.of("google", "github").contains(provider)) {
