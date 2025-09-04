@@ -7,6 +7,7 @@ API para cadastro e consulta de Fabricantes e Produtos, com BFF (Backend for Fro
 - Arquitetura e módulos
 - Tecnologias e versões
 - Como executar (local e Docker)
+- Execução em EC2 (AWS) – Front + Back com IP público
 - Banco de dados e dados iniciais
 - Endpoints principais (REST e BFF)
 - Modelo de erros e validações
@@ -72,7 +73,7 @@ java -jar target/pulse-backend-0.0.1-SNAPSHOT.jar
   - API base: http://localhost:8081
   - Swagger UI: http://localhost:8081/swagger-ui.html
   - OpenAPI JSON: http://localhost:8081/v3/api-docs
-  - Health: http://localhost:8081/health (utilizado pelo healthcheck do Docker)
+  - Health: http://localhost:8081/health e http://localhost:8081/api/health
   - H2 Console: http://localhost:8081/h2-console (JDBC: `jdbc:h2:mem:testdb`, user: `sa`, senha vazia)
 
 Configuração local: `src/main/resources/application.properties` (H2 em memória, data.sql habilitado).
@@ -95,10 +96,64 @@ docker compose logs -f app
 - Endereços úteis (Docker):
   - API base: http://localhost:8081
   - Swagger UI: http://localhost:8081/swagger-ui.html
-  - Health: http://localhost:8081/health (healthcheck via curl no docker-compose)
+  - Health: http://localhost:8081/health
   - Postgres (host): localhost:5432 | DB: `pulse` | user: `pulse` | pass: `pulse`
 
-Profile Docker: `src/main/resources/application-docker.properties` (usa Postgres e executa `data-docker.sql`, com muitos registros e ON CONFLICT para idempotência).
+Profile Docker: `src/main/resources/application-docker.properties` (usa Postgres e executa `data-docker.sql`).
+
+## Execução em EC2 (AWS) – Front + Back com IP público
+Objetivo: executar frontend (Nginx) e backend (API) em Docker nas EC2, acessando via IP público.
+
+- Requisitos de rede (Security Groups):
+  - Frontend: abrir porta 80 para 0.0.0.0/0.
+  - Backend: abrir porta 8081; em dev, 0.0.0.0/0; em prod, restringir ao SG do frontend ou ao IP público do front.
+
+- Backend (API):
+  - Porta container: 8081. Publicar: `-p 8081:8081`.
+  - Variáveis mínimas:
+    - `AUTH_JWT_SECRET` (obrigatória), `AUTH_JWT_EXP_SECONDS=3600`.
+    - `CORS_ALLOWED_ORIGINS` (ex.: `http://<IP_PUBLICO_FRONT>`).
+    - `OAUTH_ALLOWED_REDIRECTS` (ex.: `http://<IP_PUBLICO_FRONT>/auth/callback`).
+    - Opcional DB: `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` (ou use H2 padrão).
+  - Exemplo (mesma instância do front; usa metadata para origin):
+```bash
+BACK_ORIGIN="http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"
+docker run -d --name pulse-backend -p 8081:8081 \
+  -e AUTH_JWT_SECRET=troque-me \
+  -e AUTH_JWT_EXP_SECONDS=3600 \
+  -e CORS_ALLOWED_ORIGINS="$BACK_ORIGIN" \
+  -e OAUTH_ALLOWED_REDIRECTS="$BACK_ORIGIN/auth/callback" \
+  <sua-imagem-backend>
+```
+
+- Frontend (Nginx):
+  - Porta container: 80. Publicar: `-p 80:80`.
+  - Variável para proxy:
+    - `BACKEND_UPSTREAM="<IP_PUBLICO_BACKEND>:8081"`.
+    - Se front e back estiverem na mesma instância: `"$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4):8081"`.
+  - Exemplo:
+```bash
+docker run -d --name pulse-frontend -p 80:80 \
+  -e BACKEND_UPSTREAM="$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4):8081" \
+  <sua-imagem-frontend>
+```
+
+- Alinhamento com o front:
+  - Nginx do front deve proxiar `/api` → `BACKEND_UPSTREAM`.
+  - Backend exige JWT nas rotas `/api/**` exceto `/api/auth/**` e health.
+  - OAuth no backend deve aceitar `redirect_uri` `http://<IP_PUBLICO_FRONT>/auth/callback` (ajuste em `OAUTH_ALLOWED_REDIRECTS`).
+  - CORS deve permitir `http://<IP_PUBLICO_FRONT>` (ajuste em `CORS_ALLOWED_ORIGINS`).
+
+- Critérios de aceite:
+  - `http://<IP_PUBLICO_FRONT>/` abre o app e `/login`/`/register` funcionam.
+  - `/api` no front proxia para `http://<IP_PUBLICO_BACK>:8081`.
+  - OAuth redireciona e finaliza no callback do IP público.
+  - Rotas protegidas respondem 401 sem token e 200 com token.
+  - Health do backend responde 200 em `/api/health`.
+
+- Observações:
+  - Se IP público mudar (stop/start), reexportar variáveis via metadata no próximo start do container resolve.
+  - Se front e back estiverem no mesmo host e hairpin via IP público não funcionar, usar `127.0.0.1:8081` como exceção técnica.
 
 ## Banco de dados e dados iniciais
 - H2 (profile padrão): executa `data.sql`.
@@ -107,7 +162,7 @@ Profile Docker: `src/main/resources/application-docker.properties` (usa Postgres
 ## Endpoints principais
 ### Fabricantes (`/api/fabricantes`)
 - POST `/` — cria fabricante (body: `FabricanteDTO`).
-- GET `/` — lista fabricantes.
+- GET `/` — lista fabricantes (retorna `FabricanteResponse { id, nome, descricao }`).
 - GET `/{id}` — busca por ID.
 - PUT `/{id}` — atualiza (body: `FabricanteDTO`).
 - DELETE `/{id}` — exclui.
@@ -118,7 +173,7 @@ Profile Docker: `src/main/resources/application-docker.properties` (usa Postgres
 - GET `/{id}` — busca por ID.
 - PUT `/{id}` — atualiza (body: `ProdutoDTO`).
 - DELETE `/{id}` — exclui.
-- GET `/paged` — paginação e filtros (`nome`, `fabricanteId`, `page`, `size`, `sort`).
+- GET `/paged` — paginação e filtros (`nome`, `fabricanteId`, `page`, `size`, `sort`) com resposta `{ content, page, size, totalElements, totalPages, sort }`.
 - GET `/relatorio` — mapa de produtos por nome do fabricante: `{ "ACME Indústria": [ProdutoResponse,...], ... }`.
 
 ### BFF (`/api/bff`)
@@ -127,23 +182,19 @@ Profile Docker: `src/main/resources/application-docker.properties` (usa Postgres
 - Repasse de cabeçalhos: Authorization e X-Correlation-ID.
 
 ## Modelo de erros e validações
-- Erros de negócio/404: `ErrorResponse { error, timestamp, path }`.
+- Erros de negócio/404/401/409: `ErrorResponse { error, timestamp, path }` (LocalDateTime serializado via JavaTimeModule).
 - Validação de DTO (400): mapa de campos `{ campo: mensagem }`.
 - Regras:
-  - Fabricante: CNPJ obrigatório, único e válido (validador `@CNPJ`).
-  - Produto: `nome` e `codigoBarras` obrigatórios e `fabricanteId` requerido; unicidade de `codigoBarras`.
+  - Fabricante: `nome` 1..120; `descricao` opcional até 500; CNPJ obrigatório, único e válido.
+  - Produto: `nome` 1..120; `descricao` opcional até 500; `fabricanteId` requerido; unicidade de `codigoBarras`.
 
 ## Documentação
-- Swagger UI: `/swagger-ui.html` (descrições por endpoint e códigos de resposta documentados com `@ApiResponses`).
+- Swagger UI: `/swagger-ui.html`.
 - OpenAPI JSON: `/v3/api-docs`.
-- Postman: `docs/postman/pulse-backend.postman_collection.json` (CRUD, paginação, relatório e BFF). A descrição inclui o formato padrão de erro.
+- Postman: `docs/postman/pulse-backend.postman_collection.json`.
 
 ## Testes
-- Unitários (Mockito/JUnit): `FabricanteServiceTest`, `ProdutoServiceTest`.
-- Integração (MockMvc + H2):
-  - `FabricanteControllerIT` — CRUD e validações.
-  - `ProdutoControllerIT` — lista, filtro por fabricante, paginação, relatório e validações.
-  - `BffIntegrationTest` — delegação para clientes Feign (mockados).
+- Unitários (Mockito/JUnit) e Integração (MockMvc + H2).
 
 Rodar testes:
 ```bash
@@ -151,23 +202,13 @@ mvn -DskipTests=false test
 ```
 
 ## Padrões adotados
-- Arquitetura: Hexagonal (ports/adapters) para desacoplamento entre domínio, HTTP e persistência.
-- Feign + ErrorDecoder: padroniza mensagens e mapeia 400/404; repasse de headers (Authorization, X-Correlation-ID).
-- Documentação: Springdoc OpenAPI, anotações `@Tag`, `@Operation`, `@ApiResponses` e `@Schema`.
-- Commits: preferencialmente com 3 mensagens (-m -m -m). Exemplo:
-```
-git commit -m "feat: descrição curta e clara" -m "Issue: #123" -m "Link: https://github.com/usuario/repo/issues/123"
-```
+- Arquitetura: Hexagonal (ports/adapters).
+- Feign + ErrorDecoder: padroniza mensagens e repassa Authorization e X-Correlation-ID.
+- Documentação: Springdoc OpenAPI.
+- Commits: -m -m -m (Issue/Link). 
 
 ## Troubleshooting
-- H2 console não abre: confirme `spring.h2.console.enabled=true` e URL `jdbc:h2:mem:testdb`.
-- Docker build falhou por encoding: o projeto está padronizado em UTF-8 no Maven; evite caracteres com encoding inconsistente em `.properties`.
-- Compose: remova a chave `version` (já removida aqui) para evitar avisos; use `docker compose build && docker compose up -d`.
-- Porta: por padrão usamos `8081`; ajuste `server.port` se necessário.
-- Docker sobe sem dados: garanta que o profile `docker` está ativo no container (já definido no Dockerfile/compose) e que o `data-docker.sql` está presente no classpath.
-
----
-
-## Contatos e licenças
-- Swagger UI expõe contato do time (OpenAPI Info).
-- Licença: MIT (arquivo `LICENSE`).
+- LocalDateTime em erros: já configurado via ObjectMapper do Spring.
+- Compose: use `docker compose build` e `docker compose up -d`.
+- Porta padrão: `8081`.
+- `data-docker.sql`: idempotente; em Postgres use profile `docker`.
