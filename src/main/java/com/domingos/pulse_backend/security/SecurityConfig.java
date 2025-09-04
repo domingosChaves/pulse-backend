@@ -1,5 +1,6 @@
 package com.domingos.pulse_backend.security;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -13,6 +14,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -31,7 +33,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, OAuth2SuccessHandler oAuth2SuccessHandler) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           OAuth2SuccessHandler oAuth2SuccessHandler,
+                                           OAuth2FailureHandler oAuth2FailureHandler,
+                                           ObjectProvider<ClientRegistrationRepository> clientRegs) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .headers(h -> h.frameOptions(f -> f.disable())) // H2 console
@@ -47,9 +52,16 @@ public class SecurityConfig {
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().authenticated()
             )
-            .oauth2Login(oauth -> oauth.successHandler(oAuth2SuccessHandler))
             .addFilterBefore(new JwtAuthenticationFilter(jwtService, usuarioRepository), UsernamePasswordAuthenticationFilter.class)
             .httpBasic(Customizer.withDefaults());
+
+        // Habilita oauth2Login apenas se houver clientes configurados
+        if (clientRegs.getIfAvailable() != null) {
+            http.oauth2Login(oauth -> oauth
+                .successHandler(oAuth2SuccessHandler)
+                .failureHandler(oAuth2FailureHandler)
+            );
+        }
         return http.build();
     }
 

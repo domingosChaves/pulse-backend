@@ -13,7 +13,8 @@
   },
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:8081" },
-    { "key": "accessToken", "value": "" }
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" }
   ],
   "item": [
     {
@@ -29,7 +30,24 @@
               "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin\"\n}"
             },
             "url": "{{baseUrl}}/auth/login"
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const data = pm.response.json();",
+                  "    if (data.accessToken) pm.collectionVariables.set('accessToken', data.accessToken);",
+                  "    if (data.refreshToken) pm.collectionVariables.set('refreshToken', data.refreshToken);",
+                  "  } catch (e) { /* ignore */ }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         },
         {
           "name": "Refresh (renovar tokens)",
@@ -42,6 +60,15 @@
             },
             "url": "{{baseUrl}}/auth/refresh"
           }
+        },
+        {
+          "name": "Providers (Google/GitHub)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/auth/providers"
+          },
+          "description": "Retorna as URLs de autorização para login social. Fluxo: chamar /auth/providers → abrir a URL indicada (ex.: /oauth2/authorization/google) → ao autenticar no provedor, o backend retorna os JWTs no corpo da resposta."
         }
       ]
     },
@@ -103,7 +130,7 @@
             "header": [ { "key": "Content-Type", "value": "application/json" } ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Produto Atualizado\",\n  \"codigoBarras\": \"9998887776665\",\n  \"fabricanteId\": 1,\n  \"preco\": 29.9,\n  \"estoque\": 15\n}"
+              "raw": "{\n  \"nome\": \"Produto Atualizado\",\n  \"codigoBarras\": \"9998887776665\",\n  \"fabricanteId\": 1,\n  \"preco": 29.9,\n  \"estoque\": 15\n}"
             },
             "url": "{{baseUrl}}/api/produtos/1"
           }

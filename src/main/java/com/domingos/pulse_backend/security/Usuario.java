@@ -3,6 +3,7 @@ package com.domingos.pulse_backend.security;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -27,13 +28,17 @@ public class Usuario {
     @NotNull
     private UsuarioStatus status = UsuarioStatus.ATIVO;
 
-    /** Roles separadas por vírgula (ex.: ROLE_ADMIN,ROLE_USER) */
     @NotBlank
     private String roles = "ROLE_USER";
 
-    /** Provedor de login: LOCAL ou OAUTH */
     @NotBlank
-    private String provedor = "LOCAL";
+    private String provedor = "LOCAL"; // LOCAL, GOOGLE, GITHUB
+
+    // Campos opcionais para OAuth
+    private String email;
+    private String nome;
+    private String avatarUrl;
+    private String providerId; // sub (google) ou id (github)
 
     public Usuario() {}
 
@@ -56,6 +61,14 @@ public class Usuario {
     public void setRoles(String roles) { this.roles = roles; }
     public String getProvedor() { return provedor; }
     public void setProvedor(String provedor) { this.provedor = provedor; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
+    public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+    public String getProviderId() { return providerId; }
+    public void setProviderId(String providerId) { this.providerId = providerId; }
 
     public Set<String> rolesAsSet() {
         return Stream.of(roles.split(","))
@@ -64,4 +77,3 @@ public class Usuario {
                 .collect(Collectors.toSet());
     }
 }
-

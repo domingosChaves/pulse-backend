@@ -6,11 +6,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 @Component
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
@@ -28,22 +31,68 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        String username = authentication.getName();
-        // Garante o usuário no banco com provedor OAUTH
+        String registrationId = (authentication instanceof OAuth2AuthenticationToken t) ? t.getAuthorizedClientRegistrationId() : "oauth";
+        OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
+        Map<String, Object> attrs = oauthUser.getAttributes();
+
+        // Extrair dados conforme provedor
+        String provedor = registrationId.toUpperCase(); // GOOGLE ou GITHUB
+        String providerId = null;
+        String email = null;
+        String nome = null;
+        String avatar = null;
+        String username;
+
+        if ("GOOGLE".equals(provedor)) {
+            providerId = stringAttr(attrs, "sub");
+            email = stringAttr(attrs, "email");
+            nome = stringAttr(attrs, "name");
+            avatar = stringAttr(attrs, "picture");
+        } else if ("GITHUB".equals(provedor)) {
+            providerId = stringAttr(attrs, "id");
+            email = stringAttr(attrs, "email"); // pode ser null dependendo das permissões
+            nome = stringAttr(attrs, "name");
+            if (nome == null || nome.isBlank()) nome = stringAttr(attrs, "login");
+            avatar = stringAttr(attrs, "avatar_url");
+        } else {
+            providerId = stringAttr(attrs, "id");
+            email = stringAttr(attrs, "email");
+            nome = stringAttr(attrs, "name");
+        }
+        // Definir username preferindo email, senão providerId
+        if (email != null && !email.isBlank()) {
+            username = email;
+        } else if (providerId != null && !providerId.isBlank()) {
+            username = provedor.toLowerCase() + ":" + providerId;
+        } else {
+            username = authentication.getName();
+        }
+
+        // Upsert usuário
         Usuario user = usuarioRepository.findByUsername(username).orElseGet(() -> {
             Usuario u = new Usuario();
             u.setUsername(username);
-            // senha aleatória não usada neste fluxo, apenas para satisfazer constraint
-            u.setPassword(passwordEncoder.encode("oauth2-user"));
+            u.setPassword(passwordEncoder.encode("oauth2-user")); // placeholder
             u.setStatus(UsuarioStatus.ATIVO);
             u.setRoles("ROLE_USER");
-            u.setProvedor("OAUTH");
-            return usuarioRepository.save(u);
+            u.setProvedor(provedor);
+            return u;
         });
+        user.setEmail(email);
+        user.setNome(nome);
+        user.setAvatarUrl(avatar);
+        user.setProviderId(providerId);
+        user.setProvedor(provedor);
+        usuarioRepository.save(user);
+
         var tokens = jwtService.tokensFor(user);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType("application/json");
         mapper.writeValue(response.getWriter(), tokens);
     }
-}
 
+    private String stringAttr(Map<String, Object> attrs, String key) {
+        Object v = attrs.get(key);
+        return v != null ? String.valueOf(v) : null;
+    }
+}
