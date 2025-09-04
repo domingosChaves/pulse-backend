@@ -10,7 +10,9 @@ import java.util.stream.Stream;
 
 @Entity
 @Table(name = "usuarios", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_usuarios_username", columnNames = {"username"})
+        @UniqueConstraint(name = "uk_usuarios_username", columnNames = {"username"}),
+        @UniqueConstraint(name = "uk_usuarios_email", columnNames = {"email"}),
+        @UniqueConstraint(name = "uk_usuarios_provider", columnNames = {"provedor", "provider_id"})
 })
 public class Usuario {
 
@@ -19,25 +21,37 @@ public class Usuario {
     private Long id;
 
     @NotBlank
+    @Column(nullable = false, length = 120)
     private String username;
 
     @NotBlank
+    @Column(nullable = false, length = 120)
     private String password;
 
     @Enumerated(EnumType.STRING)
     @NotNull
+    @Column(nullable = false, length = 20)
     private UsuarioStatus status = UsuarioStatus.ATIVO;
 
     @NotBlank
+    @Column(nullable = false, length = 200)
     private String roles = "ROLE_USER";
 
     @NotBlank
+    @Column(nullable = false, length = 20)
     private String provedor = "LOCAL"; // LOCAL, GOOGLE, GITHUB
 
-    // Campos opcionais para OAuth
+    // Campos opcionais para OAuth e cadastro
+    @Column(name = "email", length = 180)
     private String email;
+
+    @Column(name = "nome", length = 120)
     private String nome;
+
+    @Column(name = "avatar_url", length = 255)
     private String avatarUrl;
+
+    @Column(name = "provider_id", length = 120)
     private String providerId; // sub (google) ou id (github)
 
     public Usuario() {}
