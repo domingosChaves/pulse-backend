@@ -1,0 +1,15 @@
+# Maven
+/target
+.mvn
+*.iml
+.idea
+*.log
+
+# VCS
+.git
+.gitignore
+
+# Docker context noise
+node_modules
+**/.DS_Store
+
