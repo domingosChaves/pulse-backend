@@ -1,0 +1,286 @@
+{
+  "info": {
+    "_postman_id": "pulse-backend-collection",
+    "name": "Pulse Backend API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Coleção Postman com endpoints de Autenticação, Fabricantes, Produtos e BFF (inclui paginação e relatório por nome do fabricante).\n\nFormato de erro padrão (HTTP 4xx/5xx):\n{\n  \"error\": \"Mensagem de erro\",\n  \"timestamp\": \"2025-09-03T12:00:00\",\n  \"path\": \"/api/recurso\"\n}"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{accessToken}}", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8081" },
+    { "key": "ec2BaseUrl", "value": "http://<IP_PUBLICO_BACK>:8081" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "EC2",
+      "item": [
+        {
+          "name": "Health (EC2)",
+          "request": { "method": "GET", "header": [], "url": "{{ec2BaseUrl}}/api/health" }
+        },
+        {
+          "name": "Registrar (EC2)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tester\",\n  \"email\": \"tester@example.com\",\n  \"username\": \"tester\",\n  \"password\": \"test123\"\n}"
+            },
+            "url": "{{ec2BaseUrl}}/api/auth/register"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const data = pm.response.json();",
+                  "    if (data.token) pm.collectionVariables.set('accessToken', data.token);",
+                  "  } catch (e) { /* ignore */ }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (EC2)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"tester\",\n  \"password\": \"test123\"\n}"
+            },
+            "url": "{{ec2BaseUrl}}/api/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const data = pm.response.json();",
+                  "    if (data.token) pm.collectionVariables.set('accessToken', data.token);",
+                  "  } catch (e) { /* ignore */ }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Me (EC2)",
+          "request": { "method": "GET", "header": [], "url": "{{ec2BaseUrl}}/api/auth/me" }
+        },
+        {
+          "name": "OAuth Authorize (EC2)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{ec2BaseUrl}}/api/auth/oauth/authorize?provider=google&redirect_uri=http://<IP_PUBLICO_FRONT>/auth/callback"
+          },
+          "description": "Abra no navegador para concluir o consent. Substitua <IP_PUBLICO_FRONT> pelo IP do frontend."
+        }
+      ]
+    },
+    {
+      "name": "Autenticação",
+      "item": [
+        {
+          "name": "Registrar (cria e autentica)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tester\",\n  \"email\": \"tester@example.com\",\n  \"username\": \"tester\",\n  \"password\": \"test123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/register"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const data = pm.response.json();",
+                  "    if (data.token) pm.collectionVariables.set('accessToken', data.token);",
+                  "  } catch (e) { /* ignore */ }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (obter token)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"tester\",\n  \"password\": \"test123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const data = pm.response.json();",
+                  "    if (data.token) pm.collectionVariables.set('accessToken', data.token);",
+                  "  } catch (e) { /* ignore */ }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Me (usuário atual)",
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/auth/me" }
+        },
+        {
+          "name": "OAuth Authorize (Google)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/auth/oauth/authorize?provider=google&redirect_uri=http://localhost:4200/auth/callback"
+          }
+        },
+        {
+          "name": "OAuth Callback (troca code → token)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"google\",\n  \"code\": \"PASTE_CODE_HERE\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/oauth/callback"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const data = pm.response.json();",
+                  "    if (data.token) pm.collectionVariables.set('accessToken', data.token);",
+                  "  } catch (e) { /* ignore */ }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh (legado)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}" },
+            "url": "{{baseUrl}}/auth/refresh"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Fabricantes",
+      "item": [
+        { "name": "Listar Fabricantes", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/fabricantes" } },
+        { "name": "Buscar Fabricante por ID", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/fabricantes/1" } },
+        {
+          "name": "Criar Fabricante",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"ACME Teste\",\n  \"cnpj\": \"11222333000181\",\n  \"endereco\": \"Rua X\",\n  \"telefone\": \"(11)99999-0000\"\n}"
+            },
+            "url": "{{baseUrl}}/api/fabricantes"
+          }
+        },
+        {
+          "name": "Atualizar Fabricante",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"ACME Atualizada\",\n  \"cnpj\": \"11222333000181\",\n  \"endereco\": \"Rua X, 123\",\n  \"telefone\": \"(11)99999-0001\"\n}"
+            },
+            "url": "{{baseUrl}}/api/fabricantes/1"
+          }
+        },
+        { "name": "Excluir Fabricante", "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/api/fabricantes/1" } }
+      ]
+    },
+    {
+      "name": "Produtos",
+      "item": [
+        { "name": "Listar Produtos", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/produtos" } },
+        { "name": "Listar Produtos por Fabricante", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/produtos?fabricanteId=1" } },
+        { "name": "Listar Produtos Paginados", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/produtos/paged?nome=Produto&page=0&size=10" }, "description": "Pagina resultados com filtros opcionais (nome, fabricanteId). Usa parâmetros padrão do Spring: page, size, sort." },
+        { "name": "Buscar Produto por ID", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/produtos/1" } },
+        {
+          "name": "Criar Produto",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Produto Teste\",\n  \"codigoBarras\": \"9998887776665\",\n  \"fabricanteId\": 1,\n  \"preco\": 19.9,\n  \"estoque\": 10\n}"
+            },
+            "url": "{{baseUrl}}/api/produtos"
+          }
+        },
+        {
+          "name": "Atualizar Produto",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Produto Atualizado\",\n  \"codigoBarras\": \"9998887776665\",\n  \"fabricanteId\": 1,\n  \"preco\": 29.9,\n  \"estoque\": 15\n}"
+            },
+            "url": "{{baseUrl}}/api/produtos/1"
+          }
+        },
+        { "name": "Excluir Produto", "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/api/produtos/1" } },
+        { "name": "Relatório por Fabricante (nome)", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/produtos/relatorio" }, "description": "Retorna produtos agrupados por nome do fabricante (as chaves do mapa são os nomes)" }
+      ]
+    },
+    {
+      "name": "BFF",
+      "item": [
+        { "name": "Listar Produtos via BFF", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/bff/produtos" } },
+        { "name": "Listar Produtos Paginados via BFF", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/bff/produtos/paged?nome=Produto&page=0&size=10" } },
+        { "name": "Relatório por Fabricante via BFF (nome)", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/bff/produtos/relatorio" } },
+        { "name": "Listar Fabricantes via BFF", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/bff/fabricantes" } }
+      ]
+    }
+  ]
+}
