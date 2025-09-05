@@ -155,6 +155,40 @@ docker run -d --name pulse-frontend -p 80:80 \
   - Se IP público mudar (stop/start), reexportar variáveis via metadata no próximo start do container resolve.
   - Se front e back estiverem no mesmo host e hairpin via IP público não funcionar, usar `127.0.0.1:8081` como exceção técnica.
 
+### Variáveis de ambiente (.env)
+- Há um arquivo `.env.example` na raiz com as variáveis usadas em produção/EC2 (JWT, CORS, OAuth, DB). Copie para `.env` e ajuste os valores.
+- Principais variáveis:
+  - `AUTH_JWT_SECRET`, `AUTH_JWT_EXP_SECONDS` (padrão 3600), `AUTH_JWT_REFRESH_EXP_SECONDS`.
+  - `CORS_ALLOWED_ORIGINS` (ex.: `http://<IP_PUBLICO_FRONT>`).
+  - `OAUTH_ALLOWED_REDIRECTS` (ex.: `http://<IP_PUBLICO_FRONT>/auth/callback`).
+  - `GOOGLE_CLIENT_ID/SECRET`, `GITHUB_CLIENT_ID/SECRET` (opcional).
+  - DB opcional: `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`.
+
+### Front e back em hosts separados (duas EC2)
+- Supondo:
+  - Backend em `http://<IP_PUBLICO_BACK>:8081`.
+  - Frontend em `http://<IP_PUBLICO_FRONT>`.
+- Suba o backend com CORS/OAuth apontando para o IP do front:
+```bash
+# Na EC2 do backend
+BACK_ORIGIN="http://<IP_PUBLICO_FRONT>"
+docker run -d --name pulse-backend -p 8081:8081 \
+  -e AUTH_JWT_SECRET=troque-me \
+  -e AUTH_JWT_EXP_SECONDS=3600 \
+  -e CORS_ALLOWED_ORIGINS="$BACK_ORIGIN" \
+  -e OAUTH_ALLOWED_REDIRECTS="$BACK_ORIGIN/auth/callback" \
+  <sua-imagem-backend>
+```
+- Suba o frontend com o upstream do backend:
+```bash
+# Na EC2 do frontend
+BACKEND_UPSTREAM="<IP_PUBLICO_BACK>:8081" \
+docker run -d --name pulse-frontend -p 80:80 \
+  -e BACKEND_UPSTREAM="$BACKEND_UPSTREAM" \
+  <sua-imagem-frontend>
+```
+- Critérios de aceite: `/` abre, `/api` proxia, OAuth finaliza em `/auth/callback`, rotas protegidas exigem token e `/api/health` responde 200.
+
 ## Banco de dados e dados iniciais
 - H2 (profile padrão): executa `data.sql`.
 - Postgres (profile `docker`): executa `data-docker.sql` com volume maior de dados (fabricantes e dezenas de produtos) para testes de paginação/relatórios.
