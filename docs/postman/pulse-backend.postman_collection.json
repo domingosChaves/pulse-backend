@@ -13,10 +13,89 @@
   },
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:8081" },
+    { "key": "ec2BaseUrl", "value": "http://<IP_PUBLICO_BACK>:8081" },
     { "key": "accessToken", "value": "" },
     { "key": "refreshToken", "value": "" }
   ],
   "item": [
+    {
+      "name": "EC2",
+      "item": [
+        {
+          "name": "Health (EC2)",
+          "request": { "method": "GET", "header": [], "url": "{{ec2BaseUrl}}/api/health" }
+        },
+        {
+          "name": "Registrar (EC2)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tester\",\n  \"email\": \"tester@example.com\",\n  \"username\": \"tester\",\n  \"password\": \"test123\"\n}"
+            },
+            "url": "{{ec2BaseUrl}}/api/auth/register"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const data = pm.response.json();",
+                  "    if (data.token) pm.collectionVariables.set('accessToken', data.token);",
+                  "  } catch (e) { /* ignore */ }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (EC2)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"tester\",\n  \"password\": \"test123\"\n}"
+            },
+            "url": "{{ec2BaseUrl}}/api/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const data = pm.response.json();",
+                  "    if (data.token) pm.collectionVariables.set('accessToken', data.token);",
+                  "  } catch (e) { /* ignore */ }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Me (EC2)",
+          "request": { "method": "GET", "header": [], "url": "{{ec2BaseUrl}}/api/auth/me" }
+        },
+        {
+          "name": "OAuth Authorize (EC2)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{ec2BaseUrl}}/api/auth/oauth/authorize?provider=google&redirect_uri=http://<IP_PUBLICO_FRONT>/auth/callback"
+          },
+          "description": "Abra no navegador para concluir o consent. Substitua <IP_PUBLICO_FRONT> pelo IP do frontend."
+        }
+      ]
+    },
     {
       "name": "Autenticação",
       "item": [
